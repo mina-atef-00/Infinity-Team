@@ -1,24 +1,31 @@
 from datetime import datetime
 from typing import Optional
+from src.bot import Bot
 
-from discord import TextChannel, Embed, Guild, Member, Role, Message, Reaction, User
+from discord import (
+    TextChannel,
+    Embed,
+    Guild,
+    Member,
+    Role,
+    Message,
+    Reaction,
+    User,
+)
 from discord.ext.commands import Cog, command, Context
-from discord.ext.commands.core import has_permissions, has_role
+from discord.ext.commands.core import has_role
 from discord.utils import get
 
-from SETUP import mystic_titans_bot
+from SETUP import infinity_team_bot
 from src.db.db import (
     connect_user_db,
     disconnect_user_db,
     add_warn_db,
-    clr_warns,
-    add_private_key_db,
-    get_private_key,
 )
 
 
 class ManageScholars(Cog):
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
     @Cog.listener()
@@ -28,24 +35,23 @@ class ManageScholars(Cog):
 
             self.guild: Guild = self.bot.get_guild(self.bot.guild_id)
 
-            self.awaiting_chan: TextChannel = get(
-                self.guild.channels, name=mystic_titans_bot.awaiting_chan_name
+            self.awaiting_chan = get(
+                self.guild.channels, name=infinity_team_bot.awaiting_chan_name
             )
-            self.alerts_channel: TextChannel = get(
-                self.guild.channels, id=mystic_titans_bot.alerts_channel
+            self.alerts_channel = get(
+                self.guild.channels, id=infinity_team_bot.alerts_channel
             )
-            self.awaiting_role: Role = get(
-                self.guild.roles, name=mystic_titans_bot.awaiting_role_name
+            self.awaiting_role = get(
+                self.guild.roles, name=infinity_team_bot.awaiting_role_name
             )
-            self.manager_role: Role = get(
-                self.guild.roles, name=mystic_titans_bot.manager_role_name
+            self.manager_role = get(
+                self.guild.roles, name=infinity_team_bot.manager_role_name
             )
             self.engine = self.bot.engine
             # print(self.engine)  #!DEBUG
 
     @Cog.listener()
     async def on_member_join(self, member: Member):
-
         await member.add_roles(self.awaiting_role)
 
         member_join_embed = Embed(
@@ -56,7 +62,7 @@ class ManageScholars(Cog):
         )
         await self.alerts_channel.send(embed=member_join_embed)
 
-    @has_role(mystic_titans_bot.manager_role_name)  # TODO ADD QR CODE TO USER
+    @has_role(infinity_team_bot.manager_role_name)  # TODO ADD QR CODE TO USER
     @command(
         name="connect",
         brief="connects a user to a specific ronin address\n```connect member(mention/id) ronin:address 0xprivate_key(optional)```",
@@ -67,7 +73,6 @@ class ManageScholars(Cog):
         *,
         input_text: Optional[str],
     ):
-
         if (not input_text) or (len(input_text) == 0):
             return await ctx.send(
                 f"**You haven't provided a member or a ronin address or a private key.**\nUse `{self.bot.PREFIX}connect member_mention(or id) ronin_address private_key`, make sure it's a user mention not a role mention."
@@ -80,7 +85,7 @@ class ManageScholars(Cog):
 
         try:
             member_id = int(input_list[0])
-        except:
+        except Exception:
             member_id = int(input_list[0][3:-1])
 
         member, ronin_address = (
@@ -153,17 +158,16 @@ class ManageScholars(Cog):
             except TimeoutError:
                 await ctx.send("**Timed Out.**")
                 break
-            except:
+            except Exception:
                 break
                 raise  #!DEBUG
 
-    @has_role(mystic_titans_bot.manager_role_name)
+    @has_role(infinity_team_bot.manager_role_name)
     @command(
         name="disconnect",
         brief="disconnects a user from the scholars database\n```diconnect member(mention/id)```",
     )
     async def disconnect_user(self, ctx: Context, *, input_text: Optional[str]):
-
         if (not input_text) or (len(input_text) == 0):
             return await ctx.send(
                 f"**You haven't provided a member.**\nUse `{self.bot.PREFIX}disconnect member(mention or id)`, make sure it's a user mention not a role mention."
@@ -172,10 +176,10 @@ class ManageScholars(Cog):
 
         try:
             member_id = int(input_list[0])
-        except:
+        except Exception:
             try:
                 member_id = int(input_list[0][3:-1])
-            except:
+            except Exception:
                 return await ctx.send("**Invalid User.**")
         member = get(self.guild.members, id=member_id)
 
@@ -194,13 +198,12 @@ class ManageScholars(Cog):
             disconnect_embed.set_thumbnail(url=member.avatar_url)
             await ctx.send(embed=disconnect_embed)
 
-    @has_role(mystic_titans_bot.manager_role_name)
+    @has_role(infinity_team_bot.manager_role_name)
     @command(
         name="warn",
         brief="warns a user\n```warn member(mention/id) reason(required)```",
     )
     async def warn_user(self, ctx: Context, *, input_text: Optional[str]):
-
         if (not input_text) or (len(input_text) == 0):
             return await ctx.send(
                 f"**You haven't provided a member.**\nUse `{self.bot.PREFIX}warn member reason`, make sure it's a user mention not a role mention."
@@ -209,10 +212,10 @@ class ManageScholars(Cog):
 
         try:
             member_id = int(input_list[0])
-        except:
+        except Exception:
             try:
                 member_id = int(input_list[0][3:-1])
-            except:
+            except Exception:
                 return await ctx.send("**Invalid User.**")
 
         if len(input_list) == 1:
@@ -249,8 +252,9 @@ class ManageScholars(Cog):
             # ? DM MEMBER
             try:
                 await member.send(f"**You have been warned for:**\n```{reason}```")
-            except:
+            except Exception:
                 pass
+
 
 def setup(bot):
     bot.add_cog(ManageScholars(bot))

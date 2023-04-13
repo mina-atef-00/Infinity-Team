@@ -1,12 +1,13 @@
 from os import path
 from datetime import datetime
 from sqlmodel import Session, Field, SQLModel, create_engine, select
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from typing import Optional
 from asyncio import run
 
 
-class MysticUser(SQLModel, table=True):
+class InfinityUser(SQLModel, table=True):
     discord_id: Optional[int] = Field(default=None, primary_key=True)
     ronin_address: str
     private_key: str
@@ -15,29 +16,35 @@ class MysticUser(SQLModel, table=True):
 class Warning(SQLModel, table=True):
     id: Optional[str] = Field(default=None, primary_key=True)
     time: datetime
-    user_id: Optional[int] = Field(default=None, foreign_key="mysticuser.discord_id")
+    user_id: Optional[int] = Field(
+        default=None, foreign_key="infinityuser.discord_id"
+    )
     reason: str
 
 
-def connect_to_db(debug=False):
-    path_to_db = path.join("src", "db", "mystic-titans-db.db")
+def connect_to_db(debug=False) -> Engine:
+    path_to_db = path.join("src", "db", "infinity-team-db.db")
 
     sqlite_url = (
-        f"sqlite:///{path_to_db}" if not debug else f"sqlite:///mystic-titans-db.db"
+        f"sqlite:///{path_to_db}"
+        if not debug
+        else "sqlite:///infinity-team-db.db"
     )
 
-    engine = create_engine(sqlite_url)  #!DEBUG ", echo=True)"
+    engine = create_engine(sqlite_url)  # !DEBUG ", echo=True)"
     print("        +sqlite db")
     return engine
 
 
-def create_db_and_tables(engine):
+def create_db_and_tables(engine: Engine):
     SQLModel.metadata.create_all(engine)
 
 
-def check_user_exists(discord_id: int, engine):
+def check_user_exists(discord_id: int, engine: Engine):
     with Session(engine) as session:
-        statement = select(MysticUser).where(MysticUser.discord_id == discord_id)
+        statement = select(InfinityUser).where(
+            InfinityUser.discord_id == discord_id
+        )
         results = session.exec(statement)
 
         try:
@@ -51,14 +58,16 @@ def connect_user_db(
     discord_id: int,
     ronin_address: str,
     private_key: str,
-    engine,
+    engine: Engine,
 ):
     if check_user_exists(discord_id, engine):
         return None
 
     else:
-        user = MysticUser(
-            discord_id=discord_id, ronin_address=ronin_address, private_key=private_key
+        user = InfinityUser(
+            discord_id=discord_id,
+            ronin_address=ronin_address,
+            private_key=private_key,
         )
 
         with Session(engine) as session:
@@ -68,7 +77,7 @@ def connect_user_db(
         return user
 
 
-def disconnect_user_db(discord_id: int, engine):
+def disconnect_user_db(discord_id: int, engine: Engine):
     with Session(engine) as session:
         user = check_user_exists(discord_id, engine)
 
@@ -80,47 +89,53 @@ def disconnect_user_db(discord_id: int, engine):
             return True
 
 
-def get_address(discord_id: int, engine):
+def get_address(discord_id: int, engine: Engine):
     if not check_user_exists(discord_id, engine):
         return None
 
     else:
         with Session(engine) as session:
-            statement = select(MysticUser).where(MysticUser.discord_id == discord_id)
+            statement = select(InfinityUser).where(
+                InfinityUser.discord_id == discord_id
+            )
             results = session.exec(statement)
 
             result_address = f"0x{((results.one()).ronin_address)[6:]}"
             return result_address
 
 
-def get_private_key(discord_id: int, engine):
+def get_private_key(discord_id: int, engine: Engine):
     if not check_user_exists(discord_id, engine):
         return None
 
     else:
         with Session(engine) as session:
-            statement = select(MysticUser).where(MysticUser.discord_id == discord_id)
-            user_result: MysticUser = session.exec(statement).one()
+            statement = select(InfinityUser).where(
+                InfinityUser.discord_id == discord_id
+            )
+            user_result: InfinityUser = session.exec(statement).one()
 
             user_private_key = user_result.private_key
             return bool(user_private_key)
 
 
-def get_user_details(discord_id: int, engine):
+def get_user_details(discord_id: int, engine: Engine):
     if not check_user_exists(discord_id, engine):
         return None
 
     else:
         with Session(engine) as session:
-            statement = select(MysticUser).where(MysticUser.discord_id == discord_id)
-            user_result: MysticUser = session.exec(statement).one()
+            statement = select(InfinityUser).where(
+                InfinityUser.discord_id == discord_id
+            )
+            user_result: InfinityUser = session.exec(statement).one()
 
             user_address = f"0x{(user_result.ronin_address)[6:]}"
             user_private_key = user_result.private_key
             return (user_address, user_private_key)
 
 
-def add_warn_db(discord_id: int, reason: str, engine):
+def add_warn_db(discord_id: int, reason: str, engine: Engine):
     if not check_user_exists(discord_id, engine):
         return None
 
@@ -139,7 +154,7 @@ def add_warn_db(discord_id: int, reason: str, engine):
         return warning
 
 
-def get_warns(discord_id: int, engine):
+def get_warns(discord_id: int, engine: Engine):
     if not check_user_exists(discord_id, engine):
         return False
 
@@ -156,13 +171,13 @@ def get_warns(discord_id: int, engine):
                 return warnings_list
 
 
-def clr_warns(discord_id: int, engine):
+def clr_warns(discord_id: int, engine: Engine):
     with Session(engine) as session:
         warns = get_warns(discord_id, engine)
 
         if warns is None:
             return None
-        elif warns == False:
+        elif warns is False:
             return False
 
         else:
@@ -173,13 +188,15 @@ def clr_warns(discord_id: int, engine):
         return True
 
 
-def add_private_key_db(discord_id, engine, private_key: str):
+def add_private_key_db(discord_id, engine: Engine, private_key: str):
     if not check_user_exists(discord_id, engine):
         return None
 
     else:
         with Session(engine) as session:
-            statement = select(MysticUser).where(MysticUser.discord_id == discord_id)
+            statement = select(InfinityUser).where(
+                InfinityUser.discord_id == discord_id
+            )
             results = session.exec(statement)
 
             user = results.one()
@@ -192,7 +209,7 @@ def add_private_key_db(discord_id, engine, private_key: str):
             return user.private_key
 
 
-#!DEBUGGING
+# !DEBUGGING
 async def main():
     engine = connect_to_db(debug=True)
     print(engine)

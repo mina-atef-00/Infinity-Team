@@ -1,4 +1,4 @@
-aiohttp
+aiohttp==3.6.3
 APScheduler==3.7.0
 async-timeout==3.0.1
 black==21.7b0
@@ -17,5 +17,5 @@ SQLAlchemy==1.4.25
 sqlalchemy2-stubs==0.0.2a17
 sqlmodel==0.0.4
 sqlparse==0.4.2
-web3
-pycoingecko
+web3==5.19.0
+pycoingecko==3.1.0

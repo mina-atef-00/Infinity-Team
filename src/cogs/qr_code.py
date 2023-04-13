@@ -15,7 +15,7 @@ from src.bot import Bot
 from src.db.db import get_address
 from src.qr.qr_make import create_qr_code
 from src.api.axie_api import UserData
-from SETUP import mystic_titans_bot
+from SETUP import infinity_team_bot
 
 
 class QRCode(Cog):
@@ -30,16 +30,16 @@ class QRCode(Cog):
             self.guild: Guild = self.bot.get_guild(self.bot.guild_id)
 
             self.awaiting_chan: TextChannel = get(
-                self.guild.channels, name=mystic_titans_bot.awaiting_chan_name
+                self.guild.channels, name=infinity_team_bot.awaiting_chan_name
             )
             self.alerts_channel: TextChannel = get(
-                self.guild.channels, id=mystic_titans_bot.alerts_channel
+                self.guild.channels, id=infinity_team_bot.alerts_channel
             )
             self.awaiting_role: Role = get(
-                self.guild.roles, name=mystic_titans_bot.awaiting_role_name
+                self.guild.roles, name=infinity_team_bot.awaiting_role_name
             )
             self.manager_role: Role = get(
-                self.guild.roles, name=mystic_titans_bot.manager_role_name
+                self.guild.roles, name=infinity_team_bot.manager_role_name
             )
             self.engine = self.bot.engine
 
@@ -55,12 +55,12 @@ class QRCode(Cog):
             embed=qr_expire_embed, content=f"{self.manager_role.mention}"
         )
 
-    @has_role(mystic_titans_bot.manager_role_name)
+    @has_role(infinity_team_bot.manager_role_name)
     @command(
-        name="qr", brief="send an axie access qr code to the user, expires in 7 days."
+        name="qr",
+        brief="send an axie access qr code to the user, expires in 7 days.",
     )
     async def qr_code(self, ctx: Context, *, input_text: Optional[str]):
-
         # ? checking members
         if (not input_text) or (len(input_text) == 0):
             return await ctx.send(

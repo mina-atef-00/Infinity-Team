@@ -46,7 +46,6 @@ class UserData:
 
     @staticmethod
     async def fetch_grind_info(discord_id: int, engine, debug=False):
-
         if not check_user_exists(discord_id, engine):
             return None
 
@@ -77,7 +76,9 @@ class UserData:
                     total_slp=response_data[0]["total"],
                     total_claimable_slp=response_data[0]["claimable_total"],
                     last_claim_date=(
-                        datetime.fromtimestamp(response_data[0]["last_claimed_item_at"])
+                        datetime.fromtimestamp(
+                            response_data[0]["last_claimed_item_at"]
+                        )
                         + timedelta(days=14)
                     ).strftime(r"%a %m-%d-%Y"),
                     warns_tup=None
@@ -130,13 +131,15 @@ class UserData:
         url = f"https://axie-infinity.p.rapidapi.com/get-update/{address}"
 
         querystring = {"id": f"{address}"}
-#TODO []
+        # TODO []
         headers = {
             "x-rapidapi-host": "axie-infinity.p.rapidapi.com",
             "x-rapidapi-key": "2b801ec6c6mshb7429daad787d97p1705f0jsn0a0e62d685ad",
         }
 
-        async with request("GET", url, headers=headers, params=querystring) as response:
+        async with request(
+            "GET", url, headers=headers, params=querystring
+        ) as response:
             if response.status in (
                 401,
                 405,
@@ -173,7 +176,9 @@ class UserData:
                 response_data = await response.json()
 
                 # ?after the second mmr call
-                user_data = UserData(user_name=response_data[0]["items"][1]["name"])
+                user_data = UserData(
+                    user_name=response_data[0]["items"][1]["name"]
+                )
                 user_name = user_data.user_name
                 return user_name
 
@@ -183,7 +188,7 @@ https://api.lunaciaproxy.cloud/
 https://api.axie.technology/getgenes/100001
 https://api.axie.technology/getgenes/100001/all
 https://api.axie.technology/getgenes/100001,767393
-from SETUP import mystic_titans_bot
+from SETUP import infinity_team_bot
 https://api.axie.technology/invalidateaxie/132714
 https://api.axie.com.ph/get-axies/ronin****
 """
