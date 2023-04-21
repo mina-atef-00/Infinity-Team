@@ -16,6 +16,6 @@ requests==2.26.0
 SQLAlchemy==1.4.25
 sqlalchemy2-stubs==0.0.2a17
 sqlmodel==0.0.4
-sqlparse==0.4.2
+sqlparse==0.4.4
 web3==5.19.0
 pycoingecko==3.1.0
