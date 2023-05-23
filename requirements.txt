@@ -12,7 +12,7 @@ python-dotenv==0.19.0
 pytz==2021.1
 qrcode==7.3.1
 regex==2021.8.28
-requests==2.26.0
+requests==2.31.0
 SQLAlchemy==1.4.25
 sqlalchemy2-stubs==0.0.2a17
 sqlmodel==0.0.4
